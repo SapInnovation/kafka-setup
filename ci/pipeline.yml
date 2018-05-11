@@ -1,0 +1,30 @@
+resources:
+
+- name: git-repo
+  type: git
+  source:
+    branch: ((auth-data.GIT_BRANCH))
+    uri: ((auth-data.GIT_REPO))
+
+
+jobs:
+
+- name: run-kafka-setup
+  plan:
+    - get: git-repo
+    - task: run-setup
+      config:
+          inputs:
+          - name: git-repo
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: frolvlad/alpine-bash
+          run:
+            path: ./git-repo/ci/kafka_remote_setup.sh
+
+          params:
+            USER_NAME: ((auth-data.DESTINATION_SERVER_USER))
+            USER_PASS: ((auth-data.DESTINATION_SERVER_PASSWORD))
+            HOST_NAME: ((auth-data.DESTINATION_SERVER))
